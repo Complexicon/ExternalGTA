@@ -11,7 +11,7 @@ namespace ExternalGTA
         public double value = 0;
         private bool toggleable;
         public bool toggled = false;
-        public HackList hack = HackList.GODMODE;
+        public HackList hack = HackList.DUMMY;
 
         public MenuEntry(String name, bool toggleable, HackList h)
         {

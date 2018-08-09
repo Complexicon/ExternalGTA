@@ -28,7 +28,7 @@ namespace ExternalGTA
             KeyBoardHooking();
             setupMenus();
             listMenu.DataSource = listBoxEntrys;
-            h = new Hacks("GTA5", "GTA5.exe");
+            h = new Hacks("GTA5", "GTA5.exe", true);
         }
 
         public void setupMenus()
@@ -224,5 +224,9 @@ namespace ExternalGTA
             h.IsGameRunning();
         }
 
+        private void Main_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -16,10 +16,10 @@ namespace ExternalGTA
         bool trRunning = false;
         int targetWantedLevel = 0;
 
-        int WorldPTR = 0x2413410;
+        int WorldPTR;
 
-        int idkPTR = 0xEC975C;
-        int idk2PTR = 0xEC97A1;
+        int idkPTR;
+        int idk2PTR;
 
         int[] oGodmode = new int[] { 0x08, 0x189 };
         int[] oMaxHealth = new int[] { 0x08, 0x2A0 };
@@ -32,12 +32,28 @@ namespace ExternalGTA
         int[] oCarGravity = new int[] { 0x08, 0xd28, 0xBCC };
         int[] oCarAcceleration = new int[] { 0x08, 0xd28, 0x8C8, 0x4C };
 
-        public Hacks(string exeName, string processName)
+        public Hacks(string exeName, string processName, bool isSC)
         {
             ExeName = exeName;
             ProcessName = processName;
             BaseAddress = GetBaseAddress(ProcessName);
             pHandle = GetProcessHandle();
+
+            if (isSC)
+            {
+                WorldPTR = 0x240EDC8;
+
+                idkPTR = 0xEC98F4;
+                idk2PTR = 0xEC9939;
+            }
+            else
+            {
+                WorldPTR = 0x2413410;
+
+                idkPTR = 0xEC975C;
+                idk2PTR = 0xEC97A1;
+            }
+
         }
 
         // God Mode.
