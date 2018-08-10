@@ -28,6 +28,10 @@ namespace ExternalGTA
             KeyBoardHooking();
             setupMenus();
             listMenu.DataSource = listBoxEntrys;
+            //Steam
+            //h = new Hacks("GTA5", "GTA5.exe", false);
+
+            //SC
             h = new Hacks("GTA5", "GTA5.exe", true);
         }
 
