@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Forms;
-using System.Windows.Input;
 
 namespace ExternalGTA
 {
@@ -29,10 +26,10 @@ namespace ExternalGTA
             setupMenus();
             listMenu.DataSource = listBoxEntrys;
             //Steam
-            //h = new Hacks("GTA5", "GTA5.exe", false);
+            h = new Hacks("GTA5", "GTA5.exe", false);
 
             //SC
-            h = new Hacks("GTA5", "GTA5.exe", true);
+            //h = new Hacks("GTA5", "GTA5.exe", true);
         }
 
         public void setupMenus()
