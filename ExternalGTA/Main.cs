@@ -43,6 +43,7 @@ namespace ExternalGTA
             player.addEntry(new MenuEntry("Target Wanted Level", 5, 0, false, HackList.WANTEDLVL));
             player.addEntry(new MenuEntry("Sprint Speed", 5, 1, false, HackList.SPRINT));
             player.addEntry(new MenuEntry("Swim Speed", 5, 1, false, HackList.SWIM));
+            player.addEntry(new MenuEntry("Sumper Jump", true, HackList.SUPERJUMP));
 
             menus.Add(player);
 

@@ -20,6 +20,7 @@ namespace ExternalGTA
         GRAVITY,
         INFCLIP,
         INFAMMO,
+        SUPERJUMP,
         DUMMY
     }
 }

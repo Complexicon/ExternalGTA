@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ExternalGTA
@@ -12,14 +7,21 @@ namespace ExternalGTA
     public class Hacks : Memory
     {
 
-        Thread t;
+        Thread wantedThread;
+        Thread cheatThread;
         bool trRunning = false;
+        bool cheatTrRunning = false;
+
+        bool superJump;
+        bool explosiveAmmo;
+        bool explosiveMelee;
+
         int targetWantedLevel = 0;
 
         int WorldPTR;
 
         int idkPTR;
-        int idk2PTR;
+        //int idk2PTR;
 
         int[] oGodmode = new int[] { 0x08, 0x189 };
         int[] oMaxHealth = new int[] { 0x08, 0x2A0 };
@@ -27,6 +29,7 @@ namespace ExternalGTA
         int[] oWantedLevel = new int[] { 0x08, 0x10b8, 0x818 };
         int[] oSprintSpeed = new int[] { 0x08, 0x10b8, 0x14C };
         int[] oSwimSpeed = new int[] { 0x08, 0x10b8, 0x148 };
+        int[] oPlayerFlags = new int[] { 0x08, 0x10b8, 0x1F9 };
 
         int[] oCarGodmode = new int[] { 0x08, 0xd28, 0x189 };
         int[] oCarGravity = new int[] { 0x08, 0xd28, 0xBCC };
@@ -44,14 +47,14 @@ namespace ExternalGTA
                 WorldPTR = 0x240EDC8;
 
                 idkPTR = 0xEC98F4;
-                idk2PTR = 0xEC9939;
+                //idk2PTR = 0xEC9939;
             }
             else
             {
                 WorldPTR = 0x2413410;
 
                 idkPTR = 0xEC975C;
-                idk2PTR = 0xEC97A1;
+                //idk2PTR = 0xEC97A1;
             }
 
         }
@@ -167,21 +170,21 @@ namespace ExternalGTA
             WriteFloat(pointer, f);
         }
 
-        //Infinite Clip
-        public void setClip(bool? enabled)
+        //Infinite Ammo
+        public void setAmmo(bool? enabled)
         {
             long pointer = GetPointerAddress(BaseAddress + idkPTR);
             if (enabled == true)
             {
-                WriteBytes(pointer, new byte[] { 0x90, 0x90, 0x90 });
-            }
+				WriteBytes(pointer, new byte[] { 0x41, 0x2B, 0xC9 });
+			}
             else
             {
-                WriteBytes(pointer, new byte[] { 0x41, 0x2B, 0xC9 });
+                WriteBytes(pointer, new byte[] { 0x8A, 0x48, 0x78 });
             }
         }
 
-        //Infinite Ammo
+        /*Infinite Ammo (Old)
         public void setAmmo(bool? enabled)
         {
             long pointer = GetPointerAddress(BaseAddress + idk2PTR);
@@ -192,6 +195,35 @@ namespace ExternalGTA
             else
             {
                 WriteBytes(pointer, new byte[] { 0x41, 0x2B, 0xD1 });
+            }
+        }*/
+
+        public void startCheatThread()
+        {
+            if (!cheatTrRunning)
+            {
+                cheatTrRunning = true;
+				cheatThread = new Thread(() =>
+                {
+                    while (cheatTrRunning)
+                    {
+
+                        if (superJump)
+                        {
+                            long pointer = GetPointerAddress(BaseAddress + WorldPTR, oPlayerFlags);
+                            WriteBytes(pointer, new byte[] { 0x40 });
+                        }
+
+                        Thread.Sleep(1);
+                    }
+
+                })
+                {
+                    IsBackground = true
+                };
+				cheatThread.SetApartmentState(ApartmentState.STA);
+				cheatThread.Name = "CheatFlagThread";
+				cheatThread.Start();
             }
         }
 
@@ -214,7 +246,7 @@ namespace ExternalGTA
                         if (!trRunning)
                         {
                             trRunning = true;
-                            t = new Thread(() =>
+                            wantedThread = new Thread(() =>
                             {
                                 while (trRunning)
                                 {
@@ -231,9 +263,9 @@ namespace ExternalGTA
                             {
                                 IsBackground = true
                             };
-                            t.SetApartmentState(ApartmentState.STA);
-                            t.Name = "WantedLevelThread";
-                            t.Start();
+                            wantedThread.SetApartmentState(ApartmentState.STA);
+                            wantedThread.Name = "WantedLevelThread";
+                            wantedThread.Start();
                         }
                     }
                     else
@@ -262,11 +294,12 @@ namespace ExternalGTA
                 case HackList.GRAVITY:
                     setGravity((float)e.value);
                     break;
-                case HackList.INFCLIP:
-                    setClip(e.toggled);
-                    break;
                 case HackList.INFAMMO:
                     setAmmo(e.toggled);
+                    break;
+                case HackList.SUPERJUMP:
+                    startCheatThread();
+                    superJump = e.toggled;
                     break;
                 case HackList.DUMMY:
                     break;
@@ -275,7 +308,6 @@ namespace ExternalGTA
             }
 
         }
-
 
         public bool IsGameRunning()
         {
