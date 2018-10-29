@@ -3,25 +3,25 @@ using System.Collections.Generic;
 
 namespace ExternalGTA
 {
-    public class MenuObject
+    public class Menu
     {
 
-        List<MenuEntry> entryList = new List<MenuEntry>();
+        List<Entry> entryList = new List<Entry>();
         public List<String> menuList = new List<String>();
 
         public String menuDisplayName;
 
-        public MenuObject(String name)
+        public Menu(String name)
         {
             this.menuDisplayName = name;
         }
 
-        public void addEntry(MenuEntry e)
+        public void addEntry(Entry e)
         {
             entryList.Add(e);
         }
 
-        public MenuEntry getEntryAt(int index)
+        public Entry getEntryAt(int index)
         {
             return entryList[index];
         }
@@ -29,9 +29,9 @@ namespace ExternalGTA
         public void updateList()
         {
             List<String> tmpList = new List<String>();
-            foreach (MenuEntry e in entryList)
+            foreach (Entry e in entryList)
             {
-                tmpList.Add(e.listValue());
+                tmpList.Add(e.getValue());
             }
 
             menuList = tmpList;

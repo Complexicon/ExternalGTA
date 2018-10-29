@@ -12,8 +12,8 @@ namespace ExternalGTA
         Hacks h;
 
         bool isMain = true;
-        MenuObject currentMenu;
-        List<MenuObject> menus = new List<MenuObject>();
+        Menu currentMenu;
+        List<Menu> menus = new List<Menu>();
         List<String> listBoxEntrys = new List<String>();
 
         [DllImport("User32.dll")]
@@ -35,44 +35,46 @@ namespace ExternalGTA
         public void setupMenus()
         {
             //Player
-            MenuObject player = new MenuObject("Player>>");
+            Menu player = new Menu("Player>>");
 
-            player.addEntry(new MenuEntry("Godmode", true, HackList.GODMODE));
-            player.addEntry(new MenuEntry("Off the Radar", true, HackList.OTR));
-            player.addEntry(new MenuEntry("Never Wanted", true, HackList.NEVERWANTED));
-            player.addEntry(new MenuEntry("Target Wanted Level", 5, 0, false, HackList.WANTEDLVL));
-            player.addEntry(new MenuEntry("Sprint Speed", 5, 1, false, HackList.SPRINT));
-            player.addEntry(new MenuEntry("Swim Speed", 5, 1, false, HackList.SWIM));
-            player.addEntry(new MenuEntry("Sumper Jump", true, HackList.SUPERJUMP));
+            player.addEntry(new ToggleEntry(HackID.GODMODE, "Godmode"));
+			player.addEntry(new ToggleEntry(HackID.OTR, "Off the Radar"));
+			player.addEntry(new ToggleEntry(HackID.NEVERWANTED, "Never Wanted"));
+			player.addEntry(new ValueEntry(HackID.WANTEDLVL, "Target Wanted Level", 5, 0));
+            player.addEntry(new ValueEntry(HackID.SPRINT, "Sprint Speed", 5, 1, 1, 1));
+            player.addEntry(new ValueEntry(HackID.SWIM, "Swim Speed", 5, 1, 1, 1));
+            player.addEntry(new ToggleEntry(HackID.SUPERJUMP, "Sumper Jump"));
 
             menus.Add(player);
 
             //Vehicle
-            MenuObject vehicle = new MenuObject("Vehicle>>");
+            Menu vehicle = new Menu("Vehicle>>");
 
-            vehicle.addEntry(new MenuEntry("Vehicle Godmode", true, HackList.CARGOD));
-            vehicle.addEntry(new MenuEntry("Seatbelt", true, HackList.SEATBELT));
-            vehicle.addEntry(new MenuEntry("Gravity", 49, 0, 9.8, 0.98, false, HackList.GRAVITY));
-            vehicle.addEntry(new MenuEntry("Acceleration", 10, 1, 1, 0.5, false, HackList.ACCELERATION));
+            vehicle.addEntry(new ToggleEntry(HackID.CARGOD, "Vehicle Godmode"));
+            vehicle.addEntry(new ToggleEntry(HackID.SEATBELT, "Seatbelt"));
+            vehicle.addEntry(new ValueEntry(HackID.GRAVITY, "Gravity", 49, 0, 0.98, 9.8));
+            vehicle.addEntry(new ValueEntry(HackID.ACCELERATION, "Acceleration", 10, 1, 0.5, 1));
 
             menus.Add(vehicle);
             
             //Weapon
-            MenuObject weapon = new MenuObject("Weapon>>");
+            Menu weapon = new Menu("Weapon>>");
 
-            weapon.addEntry(new MenuEntry("Infinite Clip", true, HackList.INFCLIP));
-            weapon.addEntry(new MenuEntry("Infinite Ammo", true, HackList.INFAMMO));
+            weapon.addEntry(new ToggleEntry(HackID.INFAMMO, "Infinite Ammo"));
+			weapon.addEntry(new ToggleEntry(HackID.EXPLOSIVEAMMO, "Explosive Ammo"));
+			weapon.addEntry(new ToggleEntry(HackID.SPREAD, "Disable Spread"));
+			weapon.addEntry(new ToggleEntry(HackID.RECOIL, "Disable Recoil"));
+			weapon.addEntry(new ToggleEntry(HackID.FIRERATE, "Rapid Fire (Held Weap)"));
 
-            menus.Add(weapon);
+			menus.Add(weapon);
 
-
-            foreach (MenuObject obj in menus)
+            foreach (Menu obj in menus)
             {
                 listBoxEntrys.Add(obj.menuDisplayName);
             }
 
         }
-
+		
         public void updateMenu()
         {
             int indexBefore = listMenu.SelectedIndex;
@@ -131,9 +133,13 @@ namespace ExternalGTA
                             }
                             else
                             {
-                                currentMenu.getEntryAt(listMenu.SelectedIndex).toggle();
-                                h.runHack(currentMenu.getEntryAt(listMenu.SelectedIndex));
-                                updateMenu();
+								if (currentMenu.getEntryAt(listMenu.SelectedIndex) is ToggleEntry)
+								{
+									ToggleEntry tEnt = currentMenu.getEntryAt(listMenu.SelectedIndex) as ToggleEntry;
+									tEnt.toggle();
+									h.runHack(tEnt);
+									updateMenu();
+								}
                             }
 
                         });
@@ -183,12 +189,13 @@ namespace ExternalGTA
                         {
                             if (!isMain)
                             {
-                                if (!currentMenu.getEntryAt(listMenu.SelectedIndex).isToggleable())
-                                {
-                                    currentMenu.getEntryAt(listMenu.SelectedIndex).decrVal();
-                                    h.runHack(currentMenu.getEntryAt(listMenu.SelectedIndex));
-                                    updateMenu();
-                                }
+								if (currentMenu.getEntryAt(listMenu.SelectedIndex) is ValueEntry)
+								{
+									ValueEntry tEnt = currentMenu.getEntryAt(listMenu.SelectedIndex) as ValueEntry;
+									tEnt.decrVal();
+									h.runHack(tEnt);
+									updateMenu();
+								}
                             }
 
                         });
@@ -200,13 +207,14 @@ namespace ExternalGTA
                         {
                             if (!isMain)
                             {
-                                if (!currentMenu.getEntryAt(listMenu.SelectedIndex).isToggleable())
-                                {
-                                    currentMenu.getEntryAt(listMenu.SelectedIndex).incrVal();
-                                    h.runHack(currentMenu.getEntryAt(listMenu.SelectedIndex));
-                                    updateMenu();
-                                }
-                            }
+								if (currentMenu.getEntryAt(listMenu.SelectedIndex) is ValueEntry)
+								{
+									ValueEntry tEnt = currentMenu.getEntryAt(listMenu.SelectedIndex) as ValueEntry;
+									tEnt.incrVal();
+									h.runHack(tEnt);
+									updateMenu();
+								}
+							}
 
                         });
                     }

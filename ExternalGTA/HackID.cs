@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ExternalGTA
+﻿namespace ExternalGTA
 {
-    public enum HackList
+    public enum HackID
     {
         GODMODE,
         OTR,
@@ -18,9 +12,13 @@ namespace ExternalGTA
         SEATBELT,
         ACCELERATION,
         GRAVITY,
-        INFCLIP,
         INFAMMO,
         SUPERJUMP,
+		EXPLOSIVEAMMO,
+		ROCKETRECHARGESPEED,
+		RECOIL,
+		SPREAD,
+		FIRERATE,
         DUMMY
     }
 }

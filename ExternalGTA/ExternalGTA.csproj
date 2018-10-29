@@ -86,7 +86,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HackList.cs" />
+    <Compile Include="Entry.cs" />
+    <Compile Include="HackID.cs" />
     <Compile Include="Hacks.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
@@ -95,10 +96,11 @@
       <DependentUpon>Main.cs</DependentUpon>
     </Compile>
     <Compile Include="Memory.cs" />
-    <Compile Include="MenuEntry.cs" />
-    <Compile Include="MenuObject.cs" />
+    <Compile Include="Menu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ToggleEntry.cs" />
+    <Compile Include="ValueEntry.cs" />
     <EmbeddedResource Include="Main.resx">
       <DependentUpon>Main.cs</DependentUpon>
     </EmbeddedResource>

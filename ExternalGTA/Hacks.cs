@@ -9,16 +9,31 @@ namespace ExternalGTA
 
         Thread wantedThread;
         Thread cheatThread;
-        bool trRunning = false;
+		Thread carThread;
+		Thread weapThread;
+		Thread godThread;
+		bool wantedTrRunning = false;
         bool cheatTrRunning = false;
+		bool carTrRunning = false;
+		bool weapTrRunning = false;
+		bool godTrRunning = false;
 
-        bool superJump;
+		bool superJump;
         bool explosiveAmmo;
-        bool explosiveMelee;
 
         int targetWantedLevel = 0;
 
-        int WorldPTR;
+		float targetGravity = 9.8F;
+		int targetAcceleration = 1;
+		bool carGod = false;
+		bool seatbelt = false;
+
+		bool disableSpread = false;
+		bool disableRecoil = false;
+
+		bool enableGod = false;
+
+		int WorldPTR;
 
         int idkPTR;
         //int idk2PTR;
@@ -31,11 +46,16 @@ namespace ExternalGTA
         int[] oSwimSpeed = new int[] { 0x08, 0x10b8, 0x148 };
         int[] oPlayerFlags = new int[] { 0x08, 0x10b8, 0x1F9 };
 
+		int[] oCar = new int[] { 0x08, 0xd28 };
         int[] oCarGodmode = new int[] { 0x08, 0xd28, 0x189 };
         int[] oCarGravity = new int[] { 0x08, 0xd28, 0xBCC };
         int[] oCarAcceleration = new int[] { 0x08, 0xd28, 0x8C8, 0x4C };
 
-        public Hacks(string exeName, string processName, bool isSC)
+		int[] oWeaponSpread = new int[] { 0x08, 0x10C8, 0x20, 0x74 };
+		int[] oWeaponRecoil = new int[] { 0x08, 0x10C8, 0x20, 0x2D8 };
+		int[] oFirerate = new int[] { 0x08, 0x10C8, 0x20, 0x134 };
+
+		public Hacks(string exeName, string processName, bool isSC)
         {
             ExeName = exeName;
             ProcessName = processName;
@@ -128,8 +148,8 @@ namespace ExternalGTA
             WriteFloat(pointer, f);
         }
 
-        //Cargod
-        public void setCargod(bool? enabled)
+		//Cargod
+		public void setCargod(bool? enabled)
         {
             long pointer = GetPointerAddress(BaseAddress + WorldPTR, oCarGodmode);
             if (enabled == true)
@@ -184,7 +204,27 @@ namespace ExternalGTA
             }
         }
 
-        /*Infinite Ammo (Old)
+		//Weapon Spread
+		public void setSpread(bool toggle)
+		{
+			long pointer = GetPointerAddress(BaseAddress + WorldPTR, oWeaponSpread);
+			WriteFloat(pointer, toggle ? 0F : 1F);
+		}
+
+		//Weapon Spread
+		public void setRecoil(bool toggle)
+		{
+			long pointer = GetPointerAddress(BaseAddress + WorldPTR, oWeaponRecoil);
+			WriteFloat(pointer, toggle ? 0F : 1F);
+		}
+
+		public void setRapidfire(bool toggle)
+		{
+			long pointer = GetPointerAddress(BaseAddress + WorldPTR, oFirerate);
+			WriteFloat(pointer, toggle ? 0.01F : 1F);
+		}
+
+		/*Infinite Ammo (Old)
         public void setAmmo(bool? enabled)
         {
             long pointer = GetPointerAddress(BaseAddress + idk2PTR);
@@ -198,23 +238,38 @@ namespace ExternalGTA
             }
         }*/
 
-        public void startCheatThread()
+		public void startCheatThread()
         {
             if (!cheatTrRunning)
             {
                 cheatTrRunning = true;
 				cheatThread = new Thread(() =>
                 {
-                    while (cheatTrRunning)
+
+					long pointer = GetPointerAddress(BaseAddress + WorldPTR, oPlayerFlags);
+
+					while (cheatTrRunning)
                     {
 
-                        if (superJump)
+						Thread.Sleep(1);
+
+						if (superJump && explosiveAmmo)
+						{
+							WriteBytes(pointer, new byte[] { 0x48 });
+							continue;
+						}
+
+						if (superJump)
                         {
-                            long pointer = GetPointerAddress(BaseAddress + WorldPTR, oPlayerFlags);
                             WriteBytes(pointer, new byte[] { 0x40 });
+							continue;
                         }
 
-                        Thread.Sleep(1);
+						if (explosiveAmmo)
+						{
+							WriteBytes(pointer, new byte[] { 0x08 });
+						}
+
                     }
 
                 })
@@ -227,85 +282,206 @@ namespace ExternalGTA
             }
         }
 
-        public void runHack(MenuEntry entry)
+		public void startGodThread()
+		{
+			if (!godTrRunning)
+			{
+				godTrRunning = true;
+				godThread = new Thread(() =>
+				{
+
+					long pointer = GetPointerAddress(BaseAddress + WorldPTR, oPlayerFlags);
+
+					while (godTrRunning)
+					{
+
+						setGodmode(enableGod);
+						Thread.Sleep(100);
+
+					}
+
+				})
+				{
+					IsBackground = true
+				};
+				godThread.SetApartmentState(ApartmentState.STA);
+				godThread.Name = "GodThread";
+				godThread.Start();
+			}
+		}
+
+		public void startAntiWantedThread()
+		{
+			if (!wantedTrRunning)
+			{
+				wantedTrRunning = true;
+				wantedThread = new Thread(() =>
+				{
+					while (wantedTrRunning)
+					{
+
+						if (getWanted() != targetWantedLevel)
+						{
+							setWanted(targetWantedLevel);
+						}
+
+						Thread.Sleep(100);
+					}
+
+				})
+				{
+					IsBackground = true
+				};
+				wantedThread.SetApartmentState(ApartmentState.STA);
+				wantedThread.Name = "WantedLevelThread";
+				wantedThread.Start();
+			}
+		}
+
+		public void startCarThread()
+		{
+			if (!carTrRunning)
+			{
+				carTrRunning = true;
+				carThread = new Thread(() =>
+				{
+					while (carTrRunning)
+					{
+
+						setGravity(targetGravity);
+						setAccel(targetAcceleration);
+						setCargod(carGod);
+						setSeatbelt(seatbelt);
+
+						Thread.Sleep(100);
+					}
+
+				})
+				{
+					IsBackground = true
+				};
+				carThread.SetApartmentState(ApartmentState.STA);
+				carThread.Name = "CarThread";
+				carThread.Start();
+			}
+		}
+
+		public void startWeapThread()
+		{
+			if (!weapTrRunning)
+			{
+				weapTrRunning = true;
+				weapThread = new Thread(() =>
+				{
+					while (weapTrRunning)
+					{
+						setRecoil(disableRecoil);
+						setSpread(disableSpread);
+
+						Thread.Sleep(100);
+					}
+
+				})
+				{
+					IsBackground = true
+				};
+				weapThread.SetApartmentState(ApartmentState.STA);
+				weapThread.Name = "WeapThread";
+				weapThread.Start();
+			}
+		}
+
+		public void runHack(Entry entry)
         {
-            MenuEntry e = entry;
-            HackList h = e.hack;
+            Entry e = entry;
+			HackID h = e.getID();
 
-            switch (h)
-            {
-                case HackList.GODMODE:
-                    setGodmode(e.toggled);
-                    break;
-                case HackList.OTR:
-                    setHealth(e.toggled);
-                    break;
-                case HackList.NEVERWANTED:
-                    if (e.toggled)
-                    {
-                        if (!trRunning)
-                        {
-                            trRunning = true;
-                            wantedThread = new Thread(() =>
-                            {
-                                while (trRunning)
-                                {
+			if (e is ToggleEntry)
+			{
+				ToggleEntry tEnt = e as ToggleEntry;
 
-                                    if (getWanted() != targetWantedLevel)
-                                    {
-                                        setWanted(targetWantedLevel);
-                                    }
+				switch (h)
+				{
+					case HackID.GODMODE:
+						enableGod = tEnt.state;
+						if (tEnt.state) startGodThread();
+						else godTrRunning = false;
+						break;
+					case HackID.OTR:
+						setHealth(tEnt.state);
+						break;
+					case HackID.FIRERATE:
+						setRapidfire(tEnt.state);
+						tEnt.toggle();
+						break;
+					case HackID.NEVERWANTED:
+						if (tEnt.state)startAntiWantedThread();
+						else wantedTrRunning = false;
+						break;
+					case HackID.CARGOD:
+						if (tEnt.state) startCarThread();
+						carGod = tEnt.state;
+						break;
+					case HackID.SPREAD:
+						if (tEnt.state) startWeapThread();
+						disableSpread = tEnt.state;
+						break;
+					case HackID.RECOIL:
+						if (tEnt.state) startWeapThread();
+						disableRecoil = tEnt.state;
+						break;
+					case HackID.SEATBELT:
+						if (tEnt.state) startCarThread();
+						seatbelt = tEnt.state;
+						break;
+					case HackID.INFAMMO:
+						setAmmo(tEnt.state);
+						break;
+					case HackID.SUPERJUMP:
+						if (tEnt.state) startCheatThread();
+						superJump = tEnt.state;
+						break;
+					case HackID.EXPLOSIVEAMMO:
+						if (tEnt.state) startCheatThread();
+						explosiveAmmo = tEnt.state;
+						break;
+					case HackID.DUMMY:
+						break;
+					default:
+						break;
+				}
 
-                                    Thread.Sleep(100);
-                                }
+			}
+			else
+			{
+				ValueEntry valEnt = e as ValueEntry;
 
-                            })
-                            {
-                                IsBackground = true
-                            };
-                            wantedThread.SetApartmentState(ApartmentState.STA);
-                            wantedThread.Name = "WantedLevelThread";
-                            wantedThread.Start();
-                        }
-                    }
-                    else
-                    {
-                        trRunning = false;
-                    }
-                    break;
-                case HackList.WANTEDLVL:
-                    setWanted((int)e.value);
-                    break;
-                case HackList.SPRINT:
-                    setSprint((int)e.value);
-                    break;
-                case HackList.SWIM:
-                    setSwim((int)e.value);
-                    break;
-                case HackList.CARGOD:
-                    setCargod(e.toggled);
-                    break;
-                case HackList.SEATBELT:
-                    setSeatbelt(e.toggled);
-                    break;
-                case HackList.ACCELERATION:
-                    setAccel((int)e.value);
-                    break;
-                case HackList.GRAVITY:
-                    setGravity((float)e.value);
-                    break;
-                case HackList.INFAMMO:
-                    setAmmo(e.toggled);
-                    break;
-                case HackList.SUPERJUMP:
-                    startCheatThread();
-                    superJump = e.toggled;
-                    break;
-                case HackList.DUMMY:
-                    break;
-                default:
-                    break;
-            }
+				switch (h)
+				{
+					case HackID.WANTEDLVL:
+						setWanted((int)valEnt.val);
+						break;
+					case HackID.SPRINT:
+						setSprint((int)valEnt.val);
+						break;
+					case HackID.SWIM:
+						setSwim((int)valEnt.val);
+						break;
+					case HackID.ACCELERATION:
+						startCarThread();
+						targetAcceleration = (int)valEnt.val;
+						break;
+					case HackID.GRAVITY:
+						startCarThread();
+						targetGravity = (float)valEnt.val;
+						break;
+					default:
+						break;
+				}
+
+			}
+
+			
 
         }
 
