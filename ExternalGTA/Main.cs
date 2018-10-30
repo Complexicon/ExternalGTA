@@ -26,10 +26,10 @@ namespace ExternalGTA
             setupMenus();
             listMenu.DataSource = listBoxEntrys;
             //Steam
-            h = new Hacks("GTA5", "GTA5.exe", false);
+            h = new Hacks("GTA5", "GTA5.exe", false, this);
 
             //SC
-            //h = new Hacks("GTA5", "GTA5.exe", true);
+            //h = new Hacks("GTA5", "GTA5.exe", true, this);
         }
 
         public void setupMenus()
@@ -82,6 +82,25 @@ namespace ExternalGTA
             listMenu.DataSource = currentMenu.menuList;
             listMenu.SelectedIndex = indexBefore;
         }
+
+		public void showInfo(string s)
+		{
+			this.infoBox.Text = s;
+
+			new Thread(() =>
+			{
+
+				Thread.Sleep(3000);
+				Invoke((MethodInvoker)delegate ()
+				{
+					this.infoBox.Text = "";
+				});
+
+			})
+			{
+				IsBackground = true
+			}.Start();
+		}
 
         public void KeyBoardHooking()
         {
@@ -238,5 +257,10 @@ namespace ExternalGTA
         {
 
         }
-    }
+
+		private void infoBox_Click(object sender, EventArgs e)
+		{
+
+		}
+	}
 }

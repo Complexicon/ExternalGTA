@@ -13,25 +13,30 @@ namespace ExternalGTA
         public static extern int ReadProcessMemory(IntPtr Handle, long Address, byte[] buffer, int Size, int BytesRead = 0);
 
         public IntPtr pHandle;
+		public Process proc;
         public string ExeName { get; set; }
         public string ProcessName { get; set; }
         public long BaseAddress { get; set; }
 
-        public IntPtr GetProcessHandle()
-        {
-            try
-            {
-                Process[] ProcList = Process.GetProcessesByName(ExeName);
+		public IntPtr GetProcessHandle()
+		{
+			try
+			{
 
-                pHandle = ProcList[0].Handle;
+				pHandle = proc.Handle;
 
-                return pHandle;
-            }
-            catch
-            {
-                return IntPtr.Zero;
-            }
-        }
+				return pHandle;
+			}
+			catch
+			{
+				return IntPtr.Zero;
+			}
+		}
+
+		public Process getProcess()
+		{
+			return Process.GetProcessesByName(ExeName)[0];
+		}
 
         public long GetBaseAddress(string ModuleName)
         {
