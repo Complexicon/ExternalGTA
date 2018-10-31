@@ -43,8 +43,7 @@
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(242, 21);
 			this.label1.TabIndex = 0;
-			this.label1.Text = "Complexicon\'s External v0.2.1";
-			this.label1.Click += new System.EventHandler(this.label1_Click);
+			this.label1.Text = "Complexicon\'s External v0.2.2";
 			// 
 			// listMenu
 			// 
@@ -68,7 +67,6 @@
 			this.infoBox.Name = "infoBox";
 			this.infoBox.Size = new System.Drawing.Size(0, 17);
 			this.infoBox.TabIndex = 2;
-			this.infoBox.Click += new System.EventHandler(this.infoBox_Click);
 			// 
 			// Main
 			// 

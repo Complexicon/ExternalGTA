@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
@@ -11,12 +12,18 @@ namespace ExternalGTA
 		bool infoTrRunning = false;
 		bool skipClear = false;
 
+		bool moveMode = false;
+		bool colorMode = false;
+		int colorIndex = 0;
+
         Hacks h;
 
         bool isMain = true;
         Menu currentMenu;
         List<Menu> menus = new List<Menu>();
         List<String> listBoxEntrys = new List<String>();
+
+		List<Color> colorList = new List<Color>() { Color.DarkRed, Color.DarkOliveGreen, Color.Orange, Color.BlueViolet, Color.Gold, Color.HotPink, Color.Purple };
 
         [DllImport("User32.dll")]
         private static extern short GetAsyncKeyState(Keys vKey);
@@ -30,8 +37,13 @@ namespace ExternalGTA
             //Steam
             h = new Hacks("GTA5", "GTA5.exe", false, this);
 
-            //SC
-            //h = new Hacks("GTA5", "GTA5.exe", true, this);
+			//SC
+			//h = new Hacks("GTA5", "GTA5.exe", true, this);
+
+			this.StartPosition = FormStartPosition.Manual;
+			this.Location = new Point(50, 50);
+			setColor(colorList[colorIndex]);
+
         }
 
         public void setupMenus()
@@ -87,7 +99,11 @@ namespace ExternalGTA
 
 		public void showInfo(string s)
 		{
-			this.infoBox.Text = s;
+
+			Invoke((MethodInvoker)delegate ()
+			{
+				this.infoBox.Text = s;
+			});
 
 			if (infoTrRunning)
 			{
@@ -120,54 +136,78 @@ namespace ExternalGTA
 
         public void KeyBoardHooking()
         {
-            // Keyboard hooking
-            Thread Thread = new Thread(() =>
-            {
+			// Keyboard hooking
+			Thread Thread = new Thread(() =>
+			{
 
-                while (true)
-                {
+				while (true)
+				{
 
-                    Thread.Sleep(2);
+					Thread.Sleep(1);
 
-                    if (GetAsyncKeyState(Keys.Subtract) == -32767)
-                    {
-                        if (this.Visible)
-                        {
-                            Invoke(new MethodInvoker(Hide));
-                        }
-                        else
-                        {
-                            Invoke(new MethodInvoker(Show));
-                            Invoke((MethodInvoker)delegate ()
-                           {
-                               this.TopMost = true;
-                           });
-                        }
-                    }
+					if (GetAsyncKeyState(Keys.Subtract) == -32767)
+					{
+						if (this.Visible)
+						{
+							Invoke(new MethodInvoker(Hide));
+						}
+						else
+						{
+							Invoke(new MethodInvoker(Show));
+							Invoke((MethodInvoker)delegate ()
+						   {
+							   this.TopMost = true;
+						   });
+						}
+					}
 
-                    if (GetAsyncKeyState(Keys.F9) == -32767)
-                    {
-                        Application.Exit();
-                    }
+					if (GetAsyncKeyState(Keys.F9) == -32767)
+					{
+						System.Media.SystemSounds.Beep.Play();
+						Application.Exit();
+					}
 
-                    if (!this.Visible)
-                    {
-                        continue;
-                    }
+					if (!this.Visible)
+					{
+						continue;
+					}
 
-                    if (GetAsyncKeyState(Keys.NumPad5) == -32767)
-                    {
-                        Invoke((MethodInvoker)delegate ()
-                        {
-                            if (isMain)
-                            {
-                                currentMenu = menus[listMenu.SelectedIndex];
-                                currentMenu.updateList();
-                                listMenu.DataSource = currentMenu.menuList;
-                                isMain = false;
-                            }
-                            else
-                            {
+					if (GetAsyncKeyState(Keys.NumPad7) == -32767)
+					{
+
+						if (colorMode)
+						{
+							colorMode = false;
+						}
+
+						moveMode = !moveMode;
+						showInfo((moveMode ? "Enabled" : "Disabled") + " Move Mode!");
+					}
+
+					if (GetAsyncKeyState(Keys.NumPad9) == -32767)
+					{
+						if (moveMode)
+						{
+							moveMode = false;
+						}
+
+						colorMode = !colorMode;
+						showInfo((colorMode ? "Enabled" : "Disabled") + " Color Mode!");
+					}
+
+					if (GetAsyncKeyState(Keys.NumPad5) == -32767)
+					{
+						Invoke((MethodInvoker)delegate ()
+						{
+							if (isMain)
+							{
+								currentMenu = menus[listMenu.SelectedIndex];
+								currentMenu.updateList();
+								listMenu.DataSource = currentMenu.menuList;
+								isMain = false;
+							}
+							else
+							{
 								if (currentMenu.getEntryAt(listMenu.SelectedIndex) is ToggleEntry)
 								{
 									ToggleEntry tEnt = currentMenu.getEntryAt(listMenu.SelectedIndex) as ToggleEntry;
@@ -175,55 +215,98 @@ namespace ExternalGTA
 									h.runHack(tEnt);
 									updateMenu();
 								}
-                            }
+							}
 
-                        });
-                    }
+						});
+					}
 
-                    if (GetAsyncKeyState(Keys.NumPad0) == -32767)
-                    {
-                        Invoke((MethodInvoker)delegate ()
-                        {
-                            if (!isMain)
-                            {
-                                listMenu.DataSource = listBoxEntrys;
-                                isMain = true;
-                                currentMenu = null;
-                            }
+					if (GetAsyncKeyState(Keys.NumPad0) == -32767)
+					{
+						Invoke((MethodInvoker)delegate ()
+						{
+							if (!isMain)
+							{
+								listMenu.DataSource = listBoxEntrys;
+								isMain = true;
+								currentMenu = null;
+							}
 
-                        });
-                    }
+						});
+					}
 
-                    if (GetAsyncKeyState(Keys.NumPad8) == -32767)
-                    {
-                        Invoke((MethodInvoker)delegate ()
-                        {
-                            if (!(listMenu.SelectedIndex - 1 < 0))
-                            {
-                                listMenu.SelectedIndex -= 1;
-                            }
-                        });
+					if (GetAsyncKeyState(Keys.NumPad8) == -32767)
+					{
 
-                    }
+						if (moveMode)
+						{
+							Invoke((MethodInvoker)delegate ()
+							{
+								this.Top -= 10;
+							});
+							continue;
+						}
 
-                    if (GetAsyncKeyState(Keys.NumPad2) == -32767)
-                    {
-                        Invoke((MethodInvoker)delegate ()
-                        {
-                            if (!(listMenu.SelectedIndex + 1 > listMenu.Items.Count - 1))
-                            {
-                                listMenu.SelectedIndex += 1;
-                            }
-                        });
+						Invoke((MethodInvoker)delegate ()
+						{
+							if (!(listMenu.SelectedIndex - 1 < 0))
+							{
+								listMenu.SelectedIndex -= 1;
+							}
+						});
 
-                    }
+					}
 
-                    if (GetAsyncKeyState(Keys.NumPad4) == -32767)
-                    {
-                        Invoke((MethodInvoker)delegate ()
-                        {
-                            if (!isMain)
-                            {
+					if (GetAsyncKeyState(Keys.NumPad2) == -32767)
+					{
+						if (moveMode)
+						{
+							Invoke((MethodInvoker)delegate ()
+							{
+								this.Top += 10;
+							});
+							continue;
+						}
+
+						Invoke((MethodInvoker)delegate ()
+						{
+							if (!(listMenu.SelectedIndex + 1 > listMenu.Items.Count - 1))
+							{
+								listMenu.SelectedIndex += 1;
+							}
+						});
+
+					}
+
+					if (GetAsyncKeyState(Keys.NumPad4) == -32767)
+					{
+
+						if (colorMode)
+						{
+							Invoke((MethodInvoker)delegate ()
+							{
+								colorIndex--;
+								if(colorIndex < 0)
+								{
+									colorIndex = colorList.Count -1;
+								}
+								setColor(colorList[colorIndex]);
+							});
+							continue;
+						}
+
+						if (moveMode)
+						{
+							Invoke((MethodInvoker)delegate ()
+							{
+								this.Left -= 10;
+							});
+							continue;
+						}
+
+						Invoke((MethodInvoker)delegate ()
+						{
+							if (!isMain)
+							{
 								if (currentMenu.getEntryAt(listMenu.SelectedIndex) is ValueEntry)
 								{
 									ValueEntry tEnt = currentMenu.getEntryAt(listMenu.SelectedIndex) as ValueEntry;
@@ -231,17 +314,41 @@ namespace ExternalGTA
 									h.runHack(tEnt);
 									updateMenu();
 								}
-                            }
+							}
 
-                        });
-                    }
+						});
+					}
 
-                    if (GetAsyncKeyState(Keys.NumPad6) == -32767)
-                    {
-                        Invoke((MethodInvoker)delegate ()
-                        {
-                            if (!isMain)
-                            {
+					if (GetAsyncKeyState(Keys.NumPad6) == -32767)
+					{
+
+						if (colorMode)
+						{
+							Invoke((MethodInvoker)delegate ()
+							{
+								colorIndex++;
+								if (colorIndex > colorList.Count -1)
+								{
+									colorIndex = 0;
+								}
+								setColor(colorList[colorIndex]);
+							});
+							continue;
+						}
+
+						if (moveMode)
+						{
+							Invoke((MethodInvoker)delegate ()
+							{
+								this.Left += 10;
+							});
+							continue;
+						}
+
+						Invoke((MethodInvoker)delegate ()
+						{
+							if (!isMain)
+							{
 								if (currentMenu.getEntryAt(listMenu.SelectedIndex) is ValueEntry)
 								{
 									ValueEntry tEnt = currentMenu.getEntryAt(listMenu.SelectedIndex) as ValueEntry;
@@ -251,37 +358,25 @@ namespace ExternalGTA
 								}
 							}
 
-                        });
-                    }
+						});
+					}
 
-                }
-            })
-            {
-                IsBackground = true
-            };
-            Thread.SetApartmentState(ApartmentState.STA);
+				}
+			});
+			Thread.IsBackground = true;
             Thread.Name = "KeyHandler";
             Thread.Start();
         }
+
+		public void setColor(Color c)
+		{
+			this.listMenu.BackColor = c;
+			this.BackColor = c;
+		}
 
         protected override void OnLoad(EventArgs e)
         {
             Hacks.IsGameRunning();
         }
-
-        private void Main_Load(object sender, EventArgs e)
-        {
-
-        }
-
-		private void infoBox_Click(object sender, EventArgs e)
-		{
-
-		}
-
-		private void label1_Click(object sender, EventArgs e)
-		{
-
-		}
 	}
 }

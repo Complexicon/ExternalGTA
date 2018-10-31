@@ -465,7 +465,7 @@ namespace ExternalGTA
 					case HackID.SUPERJUMP:
 						if (tEnt.state) startCheatThread();
 						superJump = tEnt.state;
-						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") +  "Super Jump");
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") +  " Super Jump");
 						break;
 					case HackID.EXPLOSIVEAMMO:
 						if (tEnt.state) startCheatThread();
