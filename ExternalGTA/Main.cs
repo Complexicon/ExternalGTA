@@ -8,6 +8,8 @@ namespace ExternalGTA
 {
     public partial class Main : Form
     {
+		bool infoTrRunning = false;
+		bool skipClear = false;
 
         Hacks h;
 
@@ -62,8 +64,8 @@ namespace ExternalGTA
 
             weapon.addEntry(new ToggleEntry(HackID.INFAMMO, "Infinite Ammo"));
 			weapon.addEntry(new ToggleEntry(HackID.EXPLOSIVEAMMO, "Explosive Ammo"));
-			weapon.addEntry(new ToggleEntry(HackID.SPREAD, "Disable Spread"));
-			weapon.addEntry(new ToggleEntry(HackID.RECOIL, "Disable Recoil"));
+			weapon.addEntry(new ToggleEntry(HackID.SPREAD, "Disable Spread (Held Weap)"));
+			weapon.addEntry(new ToggleEntry(HackID.RECOIL, "Disable Recoil (Held Weap)"));
 			weapon.addEntry(new ToggleEntry(HackID.FIRERATE, "Rapid Fire (Held Weap)"));
 
 			menus.Add(weapon);
@@ -87,16 +89,30 @@ namespace ExternalGTA
 		{
 			this.infoBox.Text = s;
 
-			new Thread(() =>
+			if (infoTrRunning)
 			{
+				skipClear = true;
+			}
 
-				Thread.Sleep(3000);
-				Invoke((MethodInvoker)delegate ()
-				{
-					this.infoBox.Text = "";
-				});
+			infoTrRunning = true;
 
-			})
+			new Thread(() =>
+			   {
+
+				   Thread.Sleep(3000);
+				   Invoke((MethodInvoker)delegate ()
+				   {
+					   if (!skipClear)
+					   {
+						   infoBox.Text = "";
+					   }
+
+					   skipClear = false;
+					   infoTrRunning = false;
+
+				   });
+
+			   })
 			{
 				IsBackground = true
 			}.Start();
@@ -250,7 +266,7 @@ namespace ExternalGTA
 
         protected override void OnLoad(EventArgs e)
         {
-            h.IsGameRunning();
+            Hacks.IsGameRunning();
         }
 
         private void Main_Load(object sender, EventArgs e)
@@ -259,6 +275,11 @@ namespace ExternalGTA
         }
 
 		private void infoBox_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void label1_Click(object sender, EventArgs e)
 		{
 
 		}

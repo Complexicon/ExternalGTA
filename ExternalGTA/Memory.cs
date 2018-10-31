@@ -29,6 +29,7 @@ namespace ExternalGTA
 			}
 			catch
 			{
+				Hacks.IsGameRunning();
 				return IntPtr.Zero;
 			}
 		}

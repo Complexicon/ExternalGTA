@@ -61,6 +61,9 @@ namespace ExternalGTA
 			BaseAddress = GetBaseAddress(ProcessName);
 			mRef = m;
 
+			proc.EnableRaisingEvents = true;
+			proc.Exited += new System.EventHandler(onExit);
+
 			if (isSC)
             {
                 WorldPTR = 0x240EDC8;
@@ -416,9 +419,12 @@ namespace ExternalGTA
 						enableGod = tEnt.state;
 						if (tEnt.state) startGodThread();
 						else godTrRunning = false;
+						setGodmode(enableGod);
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") + " Godmode!");
 						break;
 					case HackID.OTR:
 						setHealth(tEnt.state);
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") + " Off the Radar!");
 						break;
 					case HackID.FIRERATE:
 						setRapidfire(tEnt.state);
@@ -428,10 +434,13 @@ namespace ExternalGTA
 					case HackID.NEVERWANTED:
 						if (tEnt.state)startWantedLevelThread();
 						else wantedTrRunning = false;
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") + " Never Wanted!");
 						break;
 					case HackID.CARGOD:
 						if (tEnt.state) startCarThread();
 						carGod = tEnt.state;
+						setCargod(carGod);
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") + " Cargod!");
 						break;
 					case HackID.SPREAD:
 						setSpread(tEnt.state);
@@ -446,19 +455,25 @@ namespace ExternalGTA
 					case HackID.SEATBELT:
 						if (tEnt.state) startCarThread();
 						seatbelt = tEnt.state;
+						setSeatbelt(seatbelt);
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") + " Seatbelt");
 						break;
 					case HackID.INFAMMO:
 						setAmmo(tEnt.state);
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") + " Infinite Ammo");
 						break;
 					case HackID.SUPERJUMP:
 						if (tEnt.state) startCheatThread();
 						superJump = tEnt.state;
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") +  "Super Jump");
 						break;
 					case HackID.EXPLOSIVEAMMO:
 						if (tEnt.state) startCheatThread();
 						explosiveAmmo = tEnt.state;
+						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") + " Explosive Ammo");
 						break;
 					case HackID.DUMMY:
+						mRef.showInfo("DUMMY TRIGGERED REPORT TO DEV!");
 						break;
 					default:
 						break;
@@ -498,12 +513,17 @@ namespace ExternalGTA
 
         }
 
-        public bool IsGameRunning()
+		public void onExit(object sender, System.EventArgs e)
+		{
+			Hacks.IsGameRunning();
+		}
+
+        public static bool IsGameRunning()
         {
-            Process[] process = Process.GetProcessesByName(ExeName);
+            Process[] process = Process.GetProcessesByName("GTA5");
             if (process.Length == 0)
             {
-                if (MessageBox.Show("You need to run " + ExeName, "Critical Scary Error") == System.Windows.Forms.DialogResult.OK)
+                if (MessageBox.Show("You need to run GTA5. Closing Menu!", "Critical Scary Error") == System.Windows.Forms.DialogResult.OK)
                 {
                     
                 }
