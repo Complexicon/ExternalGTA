@@ -4,20 +4,20 @@
 	{
 
 		public bool state = false;
-		private string val = "OFF";
+		private string val = "Off";
 
 		public ToggleEntry(HackID id, string displayName) : base(id, displayName){}
 
 		public void toggle()
 		{
 			state = !state;
-			val = state ? "ON" : "OFF";
+			val = state ? "On" : "Off";
 
 		}
 
 		public override string getValue()
 		{
-			return displayName + ": <" + val + ">";
+			return displayName + ":   <" + val + ">";
 		}
 
 	}

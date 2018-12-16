@@ -6,6 +6,8 @@ namespace ExternalGTA
     public class Menu
     {
 
+		int strLength = 40;
+
         List<Entry> entryList = new List<Entry>();
         public List<String> menuList = new List<String>();
 
@@ -13,8 +15,8 @@ namespace ExternalGTA
 
         public Menu(String name)
         {
-            this.menuDisplayName = name;
-        }
+			this.menuDisplayName = "► " + name;
+		}
 
         public void addEntry(Entry e)
         {

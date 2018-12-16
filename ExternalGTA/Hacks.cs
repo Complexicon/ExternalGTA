@@ -23,7 +23,9 @@ namespace ExternalGTA
 
         int targetWantedLevel = 0;
 
-		float targetGravity = 9.8F;
+		static float defaultGravity = 9.8F;
+
+		float targetGravity = defaultGravity;
 		int targetAcceleration = 1;
 		bool carGod = false;
 		bool seatbelt = false;
@@ -32,21 +34,21 @@ namespace ExternalGTA
 
 		int WorldPTR;
 
-        int idkPTR;
-        //int idk2PTR;
+        int clipPTR;
+        int ammoPTR;
 
         int[] oGodmode = new int[] { 0x08, 0x189 };
         int[] oMaxHealth = new int[] { 0x08, 0x2A0 };
-        int[] oSeatbelt = new int[] { 0x08, 0x13EC };
-        int[] oWantedLevel = new int[] { 0x08, 0x10b8, 0x818 };
+		int[] oSeatbelt = new int[] { 0x08, 0x13EC };
+		int[] oWantedLevel = new int[] { 0x08, 0x10b8, 0x818 };
         int[] oSprintSpeed = new int[] { 0x08, 0x10b8, 0x14C };
         int[] oSwimSpeed = new int[] { 0x08, 0x10b8, 0x148 };
         int[] oPlayerFlags = new int[] { 0x08, 0x10b8, 0x1F9 };
 
 		int[] oCar = new int[] { 0x08, 0xd28 };
         int[] oCarGodmode = new int[] { 0x08, 0xd28, 0x189 };
-        int[] oCarGravity = new int[] { 0x08, 0xd28, 0xBCC };
-        int[] oCarAcceleration = new int[] { 0x08, 0xd28, 0x8C8, 0x4C };
+        int[] oCarGravity = new int[] { 0x08, 0xd28, 0xC1C };
+        int[] oCarAcceleration = new int[] { 0x08, 0xd28, 0x918, 0x4c };
 
 		int[] oWeaponSpread = new int[] { 0x08, 0x10C8, 0x20, 0x74 };
 		int[] oWeaponRecoil = new int[] { 0x08, 0x10C8, 0x20, 0x2D8 };
@@ -63,20 +65,20 @@ namespace ExternalGTA
 
 			proc.EnableRaisingEvents = true;
 			proc.Exited += new System.EventHandler(onExit);
-
+			SetForegroundWindow(proc.MainWindowHandle);
 			if (isSC)
             {
-                WorldPTR = 0x240EDC8;
-				
-                idkPTR = 0xEC98F4;
-                //idk2PTR = 0xEC9939;
+                WorldPTR = 0x2D09BE8;
+
+				clipPTR = 0xEC98F4;
+				ammoPTR = 0xEC9939;
             }
             else
             {
-                WorldPTR = 0x2413410;
+                WorldPTR = 0x24839C8;
 
-                idkPTR = 0xEC975C;
-                //idk2PTR = 0xEC97A1;
+				clipPTR = 0xEC7074;
+				ammoPTR = 0xEC70B9;
             }
 
         }
@@ -219,17 +221,17 @@ namespace ExternalGTA
 			return ReadFloat(pointer);
 		}
 
-		//Infinite Ammo
-		public void setAmmo(bool? enabled)
+		//Infinite Clip
+		public void setClip(bool? enabled)
         {
-            long pointer = GetPointerAddress(BaseAddress + idkPTR);
+            long pointer = GetPointerAddress(BaseAddress + clipPTR);
             if (enabled == true)
             {
-				WriteBytes(pointer, new byte[] { 0x41, 0x2B, 0xC9 });
+				WriteBytes(pointer, new byte[] { 0x90, 0x90, 0x90 });
 			}
             else
             {
-                WriteBytes(pointer, new byte[] { 0x8A, 0x48, 0x78 });
+                WriteBytes(pointer, new byte[] { 0x41, 0x2b, 0xc9 });
             }
         }
 
@@ -253,10 +255,9 @@ namespace ExternalGTA
 			WriteFloat(pointer, toggle ? 0.01F : 1F);
 		}
 
-		/*Infinite Ammo (Old)
         public void setAmmo(bool? enabled)
         {
-            long pointer = GetPointerAddress(BaseAddress + idk2PTR);
+            long pointer = GetPointerAddress(BaseAddress + ammoPTR);
             if (enabled == true)
             {
                 WriteBytes(pointer, new byte[] { 0x90, 0x90, 0x90 });
@@ -265,7 +266,7 @@ namespace ExternalGTA
             {
                 WriteBytes(pointer, new byte[] { 0x41, 0x2B, 0xD1 });
             }
-        }*/
+        }
 
 		public void startCheatThread()
         {
@@ -460,6 +461,7 @@ namespace ExternalGTA
 						break;
 					case HackID.INFAMMO:
 						setAmmo(tEnt.state);
+						setClip(tEnt.state);
 						mRef.showInfo((tEnt.state ? "Enabled" : "Disabled") + " Infinite Ammo");
 						break;
 					case HackID.SUPERJUMP:
@@ -501,7 +503,8 @@ namespace ExternalGTA
 						break;
 					case HackID.GRAVITY:
 						startCarThread();
-						targetGravity = (float)valEnt.val;
+						double v = defaultGravity * valEnt.val;
+						targetGravity = (float)v;
 						break;
 					default:
 						break;

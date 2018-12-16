@@ -11,8 +11,10 @@ namespace ExternalGTA
         public static extern int WriteProcessMemory(IntPtr Handle, long Address, byte[] buffer, int Size, int BytesWritten = 0);
         [DllImport("kernel32.dll")]
         public static extern int ReadProcessMemory(IntPtr Handle, long Address, byte[] buffer, int Size, int BytesRead = 0);
+		[DllImport("user32.dll")]
+		public static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        public IntPtr pHandle;
+		public IntPtr pHandle;
 		public Process proc;
         public string ExeName { get; set; }
         public string ProcessName { get; set; }

@@ -14,6 +14,7 @@ namespace ExternalGTA
 
 		bool moveMode = false;
 		bool colorMode = false;
+		bool opacityMode = false;
 		int colorIndex = 0;
 
         Hacks h;
@@ -30,6 +31,8 @@ namespace ExternalGTA
 
         public Main()
         {
+			string ver = "b0.2.86";
+
             InitializeComponent();
             KeyBoardHooking();
             setupMenus();
@@ -44,12 +47,16 @@ namespace ExternalGTA
 			this.Location = new Point(50, 50);
 			setColor(colorList[colorIndex]);
 
-        }
+			this.TopMost = true;
+
+			label1.Text = "Complexicon's External " + ver;
+
+		}
 
         public void setupMenus()
         {
             //Player
-            Menu player = new Menu("Player>>");
+            Menu player = new Menu("Player");
 
             player.addEntry(new ToggleEntry(HackID.GODMODE, "Godmode"));
 			player.addEntry(new ToggleEntry(HackID.OTR, "Off the Radar"));
@@ -62,17 +69,17 @@ namespace ExternalGTA
             menus.Add(player);
 
             //Vehicle
-            Menu vehicle = new Menu("Vehicle>>");
+            Menu vehicle = new Menu("Vehicle");
 
             vehicle.addEntry(new ToggleEntry(HackID.CARGOD, "Vehicle Godmode"));
             vehicle.addEntry(new ToggleEntry(HackID.SEATBELT, "Seatbelt"));
-            vehicle.addEntry(new ValueEntry(HackID.GRAVITY, "Gravity", 49, 0, 0.98, 9.8));
-            vehicle.addEntry(new ValueEntry(HackID.ACCELERATION, "Acceleration", 10, 1, 0.5, 1));
+            vehicle.addEntry(new ValueEntry(HackID.GRAVITY, "Gravitation Multiplier", 10, 0, 0.5, 1));
+            vehicle.addEntry(new ValueEntry(HackID.ACCELERATION, "Acceleration Multiplier", 10, 1, 0.5, 1));
 
             menus.Add(vehicle);
             
             //Weapon
-            Menu weapon = new Menu("Weapon>>");
+            Menu weapon = new Menu("Weapon");
 
             weapon.addEntry(new ToggleEntry(HackID.INFAMMO, "Infinite Ammo"));
 			weapon.addEntry(new ToggleEntry(HackID.EXPLOSIVEAMMO, "Explosive Ammo"));
@@ -143,8 +150,6 @@ namespace ExternalGTA
 				while (true)
 				{
 
-					Thread.Sleep(1);
-
 					if (GetAsyncKeyState(Keys.Subtract) == -32767)
 					{
 						if (this.Visible)
@@ -169,34 +174,37 @@ namespace ExternalGTA
 
 					if (!this.Visible)
 					{
+						Thread.Sleep(1);
 						continue;
 					}
 
 					if (GetAsyncKeyState(Keys.NumPad7) == -32767)
 					{
-
-						if (colorMode)
-						{
-							colorMode = false;
-						}
-
+						if (colorMode) colorMode = false;
+						if (opacityMode) opacityMode = false;
 						moveMode = !moveMode;
 						showInfo((moveMode ? "Enabled" : "Disabled") + " Move Mode!");
 					}
 
 					if (GetAsyncKeyState(Keys.NumPad9) == -32767)
 					{
-						if (moveMode)
-						{
-							moveMode = false;
-						}
-
+						if (moveMode) moveMode = false;
+						if (opacityMode) opacityMode = false;
 						colorMode = !colorMode;
 						showInfo((colorMode ? "Enabled" : "Disabled") + " Color Mode!");
 					}
 
+					if(GetAsyncKeyState(Keys.NumPad1) == -32767)
+					{
+						if (moveMode) moveMode = false;
+						if (colorMode) colorMode = false;
+						opacityMode = !opacityMode;
+						showInfo((opacityMode ? "Enabled" : "Disabled") + " Opacity Mode!");
+					}
+
 					if (GetAsyncKeyState(Keys.NumPad5) == -32767)
 					{
+						if (colorMode || moveMode) continue;
 						Invoke((MethodInvoker)delegate ()
 						{
 							if (isMain)
@@ -222,6 +230,7 @@ namespace ExternalGTA
 
 					if (GetAsyncKeyState(Keys.NumPad0) == -32767)
 					{
+						if (colorMode || moveMode) continue;
 						Invoke((MethodInvoker)delegate ()
 						{
 							if (!isMain)
@@ -236,7 +245,7 @@ namespace ExternalGTA
 
 					if (GetAsyncKeyState(Keys.NumPad8) == -32767)
 					{
-
+						if (colorMode) continue;
 						if (moveMode)
 						{
 							Invoke((MethodInvoker)delegate ()
@@ -258,6 +267,7 @@ namespace ExternalGTA
 
 					if (GetAsyncKeyState(Keys.NumPad2) == -32767)
 					{
+						if (colorMode) continue;
 						if (moveMode)
 						{
 							Invoke((MethodInvoker)delegate ()
@@ -285,9 +295,9 @@ namespace ExternalGTA
 							Invoke((MethodInvoker)delegate ()
 							{
 								colorIndex--;
-								if(colorIndex < 0)
+								if (colorIndex < 0)
 								{
-									colorIndex = colorList.Count -1;
+									colorIndex = colorList.Count - 1;
 								}
 								setColor(colorList[colorIndex]);
 							});
@@ -299,6 +309,16 @@ namespace ExternalGTA
 							Invoke((MethodInvoker)delegate ()
 							{
 								this.Left -= 10;
+							});
+							continue;
+						}
+
+						if (opacityMode)
+						{
+							Invoke((MethodInvoker)delegate ()
+							{
+								if(this.Opacity - 0.1 < 0) this.Opacity = 0;
+								this.Opacity -= 0.1;
 							});
 							continue;
 						}
@@ -327,7 +347,7 @@ namespace ExternalGTA
 							Invoke((MethodInvoker)delegate ()
 							{
 								colorIndex++;
-								if (colorIndex > colorList.Count -1)
+								if (colorIndex > colorList.Count - 1)
 								{
 									colorIndex = 0;
 								}
@@ -341,6 +361,16 @@ namespace ExternalGTA
 							Invoke((MethodInvoker)delegate ()
 							{
 								this.Left += 10;
+							});
+							continue;
+						}
+
+						if (opacityMode)
+						{
+							Invoke((MethodInvoker)delegate ()
+							{
+								if (this.Opacity + 0.1 > 100) this.Opacity = 1;
+								this.Opacity += 0.1;
 							});
 							continue;
 						}
@@ -361,11 +391,15 @@ namespace ExternalGTA
 						});
 					}
 
+					Thread.Sleep(1);
+
 				}
-			});
-			Thread.IsBackground = true;
-            Thread.Name = "KeyHandler";
-            Thread.Start();
+			})
+			{
+				IsBackground = true,
+				Name = "KeyHandler"
+			};
+			Thread.Start();
         }
 
 		public void setColor(Color c)
@@ -378,5 +412,41 @@ namespace ExternalGTA
         {
             Hacks.IsGameRunning();
         }
+
+		private void Main_Load(object sender, EventArgs e)
+		{
+
+		}
+
+		private void listBox_DrawItem(object sender, DrawItemEventArgs e)
+		{
+			if (e.Index < 0) return;
+			//if the item state is selected them change the back color 
+			int diff = -30;
+			int r = colorList[colorIndex].R + diff;
+			int g = colorList[colorIndex].G + diff;
+			int b = colorList[colorIndex].B + diff;
+			if (r <= 0) r = 0;
+			if (g <= 0) g = 0;
+			if (b <= 0) b = 0;
+
+			Color c = Color.FromArgb(r, g, b);
+			if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+				e = new DrawItemEventArgs(e.Graphics,
+										  e.Font,
+										  e.Bounds,
+										  e.Index,
+										  e.State ^ DrawItemState.Selected,
+										  e.ForeColor,
+										  c);//Choose the color
+
+			// Draw the background of the ListBox control for each item.
+			e.DrawBackground();
+			// Draw the current item text
+			e.Graphics.DrawString(listMenu.Items[e.Index].ToString(), e.Font, Brushes.White, e.Bounds, StringFormat.GenericDefault);
+			// If the ListBox has focus, draw a focus rectangle around the selected item.
+			e.DrawFocusRectangle();
+		}
+
 	}
 }

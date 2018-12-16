@@ -50,7 +50,7 @@
 
 		public override string getValue()
 		{
-			return displayName + ": <" + val + ">";
+			return displayName + ":   [" + val + "]";
 		}
 
 	}
